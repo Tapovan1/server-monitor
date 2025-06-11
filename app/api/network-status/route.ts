@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { checkNetworkConnectivity, checkLocalServices } from "@/lib/network-monitor"
+import { checkNetworkConnectivity, checkLocalServices } from "@/lib/network-monitor.js"
 
 export async function GET() {
   try {

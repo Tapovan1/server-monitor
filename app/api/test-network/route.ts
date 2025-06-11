@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { fastNetworkCheck, testNetworkDetection } from "@/lib/offline-collector"
+import { fastNetworkCheck, testNetworkDetection } from "@/lib/offline-collector.js"
 
 export async function GET() {
   try {
