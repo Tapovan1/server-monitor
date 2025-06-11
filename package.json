@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
- "scripts": {
+"scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start -p 3002",
     "lint": "next lint",
     "background": "node background-collector.js",
-    "monitor": " npm run build && npm run background & npm run start"
+    "monitor": "npm run background & npm run dev",
+    "setup": "mkdir -p data && echo 'Data directory created'",
+    "build-and-start": "npm run build && npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

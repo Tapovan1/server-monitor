@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getHistoricalData, getNetworkEvents, exportData } from "@/lib/database"
+import { getHistoricalData, getNetworkEvents, exportData } from "@/lib/database.js"
 
 export async function GET(request: Request) {
   try {
