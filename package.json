@@ -9,7 +9,7 @@
     "start": "next start -p 3002",
     "lint": "next lint",
     "background": "node background-collector.js",
-    "monitor": "npm run background & npm run dev"
+    "monitor": " npm run build && npm run background & npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
