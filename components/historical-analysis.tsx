@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Download, AlertTriangle, Wifi, WifiOff, Database } from "lucide-react"
+import { Download, AlertTriangle, Wifi, WifiOff, Database, Clock } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, XAxis, YAxis } from "recharts"
+import NetworkTest from "./network-test"
 
 interface HistoricalData {
   metrics: any[]
@@ -31,6 +32,7 @@ export default function HistoricalAnalysis() {
   const [networkStatus, setNetworkStatus] = useState<NetworkStatus | null>(null)
   const [timeRange, setTimeRange] = useState(24)
   const [loading, setLoading] = useState(true)
+  const [currentTime, setCurrentTime] = useState("")
 
   const fetchHistoricalData = async () => {
     try {
@@ -64,7 +66,7 @@ export default function HistoricalAnalysis() {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `server-monitoring-${new Date().toISOString().split("T")[0]}.json`
+        a.download = `server-monitoring-india-${new Date().toLocaleDateString("en-IN").replace(/\//g, "-")}.json`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
@@ -75,6 +77,24 @@ export default function HistoricalAnalysis() {
     }
   }
 
+  // Update India time every second
+  useEffect(() => {
+    const updateTime = () => {
+      const indiaTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+      setCurrentTime(indiaTime)
+    }
+
+    updateTime()
+    const timeInterval = setInterval(updateTime, 1000)
+
+    return () => clearInterval(timeInterval)
+  }, [])
+
   useEffect(() => {
     fetchHistoricalData()
     fetchNetworkStatus()
@@ -82,7 +102,7 @@ export default function HistoricalAnalysis() {
 
     const interval = setInterval(() => {
       fetchNetworkStatus()
-    }, 10000) // Check network status every 10 seconds
+    }, 5000) // Check every 5 seconds now
 
     return () => clearInterval(interval)
   }, [timeRange])
@@ -100,7 +120,11 @@ export default function HistoricalAnalysis() {
       .slice(0, 50)
       .reverse()
       .map((metric) => ({
-        time: new Date(metric.timestamp).toLocaleTimeString(),
+        time: new Date(metric.timestamp).toLocaleTimeString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         cpu: metric.cpu_usage,
         memory: metric.memory_percentage,
         network: metric.network_status === "offline" ? null : metric.cpu_usage,
@@ -108,6 +132,9 @@ export default function HistoricalAnalysis() {
 
   return (
     <div className="space-y-6">
+      {/* Network Test Component */}
+      <NetworkTest />
+
       {/* Network Status */}
       <Card>
         <CardHeader>
@@ -117,7 +144,11 @@ export default function HistoricalAnalysis() {
             ) : (
               <WifiOff className="h-5 w-5 text-red-500" />
             )}
-            Network & System Status
+            Network & System Status (Fast Detection: 5s)
+            <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              India Time: {currentTime}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -138,7 +169,7 @@ export default function HistoricalAnalysis() {
               <span>Data Collection</span>
               <Badge variant="default">
                 <Database className="h-3 w-3 mr-1" />
-                Active
+                Active (15s intervals)
               </Badge>
             </div>
           </div>
@@ -153,7 +184,7 @@ export default function HistoricalAnalysis() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{historicalData?.summary.totalRecords || 0}</div>
-            <p className="text-xs text-muted-foreground">Last {timeRange} hours</p>
+            <p className="text-xs text-muted-foreground">Last {timeRange} hours (IST)</p>
           </CardContent>
         </Card>
 
@@ -169,16 +200,11 @@ export default function HistoricalAnalysis() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Data Coverage</CardTitle>
+            <CardTitle className="text-sm font-medium">Detection Speed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {historicalData?.metrics.length
-                ? Math.round((historicalData.metrics.length / (timeRange * 120)) * 100)
-                : 0}
-              %
-            </div>
-            <p className="text-xs text-muted-foreground">Expected vs actual</p>
+            <div className="text-2xl font-bold text-green-600">5s</div>
+            <p className="text-xs text-muted-foreground">Network check interval</p>
           </CardContent>
         </Card>
 
@@ -189,10 +215,12 @@ export default function HistoricalAnalysis() {
           <CardContent>
             <div className="text-sm font-bold">
               {historicalData?.summary.lastUpdate
-                ? new Date(historicalData.summary.lastUpdate).toLocaleTimeString()
+                ? new Date(historicalData.summary.lastUpdate).toLocaleTimeString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                  })
                 : "N/A"}
             </div>
-            <p className="text-xs text-muted-foreground">Most recent data</p>
+            <p className="text-xs text-muted-foreground">Most recent data (IST)</p>
           </CardContent>
         </Card>
       </div>
@@ -200,8 +228,10 @@ export default function HistoricalAnalysis() {
       {/* Time Range Controls */}
       <Card>
         <CardHeader>
-          <CardTitle>Historical Analysis</CardTitle>
-          <CardDescription>View and export historical monitoring data</CardDescription>
+          <CardTitle>Historical Analysis - India Standard Time (UTC+05:30)</CardTitle>
+          <CardDescription>
+            View and export historical monitoring data in IST - Network checks every 5 seconds
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -219,7 +249,7 @@ export default function HistoricalAnalysis() {
             </div>
             <Button onClick={exportData} className="ml-auto">
               <Download className="h-4 w-4 mr-2" />
-              Export Data
+              Export Data (IST)
             </Button>
           </div>
 
@@ -268,9 +298,9 @@ export default function HistoricalAnalysis() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Network Events
+              Network Events (India Standard Time) - Fast Detection
             </CardTitle>
-            <CardDescription>Recent network outages and connectivity issues</CardDescription>
+            <CardDescription>Recent network outages detected within 5-10 seconds</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -278,7 +308,18 @@ export default function HistoricalAnalysis() {
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{event.description}</p>
-                    <p className="text-sm text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(event.timestamp).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}{" "}
+                      IST
+                    </p>
                   </div>
                   <div className="text-right">
                     <Badge variant={event.event_type === "network_down" ? "destructive" : "default"}>
@@ -293,8 +334,12 @@ export default function HistoricalAnalysis() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          
+          
+         
+        </CardContent>
+       
+      </Card>  
       )}
     </div>
   )
